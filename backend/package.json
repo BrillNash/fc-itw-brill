@@ -1,22 +1,30 @@
 {
-  "name": "backend",
+  "name": "shift-management-backend",
   "version": "1.0.0",
-  "type": "module",
-  "description": "",
+  "description": "A Shift Management App that allows users to add workers and manage their shifts",
   "main": "index.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "node --run start -- --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon -r ts-node/register src/index.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Brill Nash",
   "license": "ISC",
   "dependencies": {
     "@google-cloud/datastore": "^10.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "luxon": "^3.6.1"
+    "firebase": "^11.9.0",
+    "luxon": "^3.6.1",
+    "uuid": "^11.1.0",
+    "zod": "^3.25.56"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/luxon": "^3.6.2",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }

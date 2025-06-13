@@ -17,7 +17,7 @@ export const getAllWorkers = async () => {
     throw new WorkerError({
       error: e,
       message: 'Error fetching workers',
-      status: 400,
+      status: 500,
     })
   }
 }
@@ -52,7 +52,7 @@ export const createWorker = async (name: string) => {
     throw new WorkerError({
       error: e,
       message: 'Error creating worker',
-      status: 400,
+      status: 500,
     })
   }
 }
@@ -72,7 +72,7 @@ export const updateWorkerName = async (workerId: string, newName: string) => {
     throw new WorkerError({
       error: e,
       message: "Error updating worker name",
-      status: 400,
+      status: 500,
     })
   }
 }
@@ -102,7 +102,7 @@ export const deleteWorker = async (workerId: string) => {
     throw new WorkerError({
       error: e,
       message: "Error deleting worker",
-      status: 400,
+      status: 500,
     })
   }
 }

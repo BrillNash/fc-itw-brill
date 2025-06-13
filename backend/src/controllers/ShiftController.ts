@@ -33,7 +33,7 @@ export const createShiftHandler = async (request: Request, response: Response) =
   const duration = endDate.diff(startDate, 'hours').hours
 
   if (duration > 12 || duration <= 0) {
-    response.status(400).json({ error: 'Invalid shift duration' })
+    response.status(500).json({ error: 'Invalid shift duration' })
     return 
   }
 
@@ -45,7 +45,7 @@ export const createShiftHandler = async (request: Request, response: Response) =
   })
 
   if (overlap) {
-    response.status(400).json({ error: 'Shift overlaps with existing' })
+    response.status(500).json({ error: 'Shift overlaps with existing' })
     return 
   }
 
@@ -76,7 +76,7 @@ export const updateShiftHandler = async (request: Request, response: Response) =
   if (duration > 12 || duration <= 0) {
     response.status(400).json({
       timestamp: new Date().toISOString(),
-      status: 400,
+      status: 500,
       errorCode: 'INVALID_SHIFT_DURATION',
       message: 'Invalid shift duration',
       path: request.originalUrl, // or `req.url` depending on your framework
@@ -94,7 +94,7 @@ export const updateShiftHandler = async (request: Request, response: Response) =
   if (overlap) {
     response.status(400).json({
       timestamp: new Date().toISOString(),
-      status: 400,
+      status: 500,
       errorCode: 'SHIFT_OVERLAP',
       message: 'Shift overlaps with existing',
       path: request.originalUrl, // or `req.url` depending on your framework

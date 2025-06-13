@@ -20,7 +20,7 @@ export const getShiftsByWorkerId = async (workerId: string) => {
     throw new ShiftError({
       error: e,
       message: "Error fetching worker shifts",
-      status: 400,
+      status: 500,
     })
   }
 }
@@ -39,7 +39,7 @@ export const getAllShifts = async () => {
     throw new ShiftError({
       error: e,
       message: "Error fetching all shifts",
-      status: 400,
+      status: 500,
     })
   }
 }
@@ -74,7 +74,7 @@ export const createShift = async (
     throw new ShiftError({
       error: e,
       message: "Failed to create shift",
-      status: 400,
+      status: 500,
     })
   }
 }
@@ -143,7 +143,7 @@ export const updateShift = async (
     throw new ShiftError({
       error: e,
       message: "Failed to update (or migrate) shift",
-      status: 400,
+      status: 500,
     })
   }
 }

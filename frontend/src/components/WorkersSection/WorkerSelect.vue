@@ -24,11 +24,4 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-
-
-
 </script>
-
-<style lang="scss" scoped>
-
-</style>

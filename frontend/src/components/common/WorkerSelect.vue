@@ -3,7 +3,7 @@
     <SelectTrigger class="w-full border rounded-b-md">
       <SelectValue placeholder="Enter worker name" />
     </SelectTrigger>
-    <SelectContent>
+    <SelectContent class="max-h-60 overflow-y-auto">
       <SelectGroup v-for="worker in workerStore.workers" :key="worker.id">
         <SelectItem :value="worker.id">
           {{ worker.name }}

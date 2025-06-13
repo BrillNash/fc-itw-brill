@@ -1,42 +1,44 @@
 <template>
-  <Table>
-    <TableHeader>
-      <TableRow>
-        <TableHead>Worker</TableHead>
-        <TableHead>Start Time</TableHead>
-        <TableHead>End Time</TableHead>
-        <TableHead>Duration (Hours)</TableHead>
-        <TableHead>Actions</TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      <TableRow v-for="(shift, key) in shiftStore.shifts" :key="shift.id">
-        <TableCell class="font-medium max-w-40 sm:max-w-64 text-ellipsis overflow-hidden">
-          {{ workerStore.workers.find(worker => worker.id === shift.workerId)?.name }}
-        </TableCell>
-        <TableCell>{{ formatEpochInTimezone(shift.start) }}</TableCell>
-        <TableCell>{{ formatEpochInTimezone(shift.end) }}</TableCell>
-        <TableCell>{{ getDurationFromEpochSeconds(shift.start, shift.end) }}</TableCell>
-        <TableCell>
-          <div class="space-x-1">
-            <Button 
-              class="hover:bg-white bg-transparent shadow-none"
-              @click="handleUpdate(shift.id)"
-            >
-              <SquarePen class="w-4 h-4 text-black"/>
-            </Button>
-            <Button 
-              class="hover:bg-white bg-transparent shadow-none"
-              @click="handleDelete(shift.id, shift.workerId)"
-            >
-              <Trash2 class="w-4 h-4 text-black"/>
-            </Button>
-          </div>
-        </TableCell>
-
-      </TableRow>
-    </TableBody>
-  </Table>
+  <div class="w-full h-full max-h-54 overflow-scroll">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Worker</TableHead>
+          <TableHead>Start Time</TableHead>
+          <TableHead>End Time</TableHead>
+          <TableHead>Duration (Hours)</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow v-for="(shift, key) in shiftStore.shifts" :key="shift.id">
+          <TableCell class="font-medium max-w-40 sm:max-w-64 text-ellipsis overflow-hidden">
+            {{ workerStore.workers.find(worker => worker.id === shift.workerId)?.name }}
+          </TableCell>
+          <TableCell>{{ formatEpochInTimezone(shift.start) }}</TableCell>
+          <TableCell>{{ formatEpochInTimezone(shift.end) }}</TableCell>
+          <TableCell>{{ getDurationFromEpochSeconds(shift.start, shift.end) }}</TableCell>
+          <TableCell>
+            <div class="space-x-1">
+              <Button 
+                class="hover:bg-white bg-transparent shadow-none"
+                @click="handleUpdate(shift.id)"
+              >
+                <SquarePen class="w-4 h-4 text-black"/>
+              </Button>
+              <Button 
+                class="hover:bg-white bg-transparent shadow-none"
+                @click="handleDelete(shift.id, shift.workerId)"
+              >
+                <Trash2 class="w-4 h-4 text-black"/>
+              </Button>
+            </div>
+          </TableCell>
+  
+        </TableRow>
+      </TableBody>
+    </Table>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -56,5 +58,4 @@ const handleUpdate = async(id: string) => {
   shiftStore.isEditMode = true
   shiftStore.editShiftId = id
 }
-
 </script>

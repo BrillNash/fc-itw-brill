@@ -32,5 +32,4 @@ const submit = async() => {
   await workerStore.addWorker(workerName.value)
   workerName.value = ''
 }
-
 </script>

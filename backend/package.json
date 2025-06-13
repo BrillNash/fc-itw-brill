@@ -2,7 +2,7 @@
   "name": "shift-management-backend",
   "version": "1.0.0",
   "description": "A Shift Management App that allows users to add workers and manage their shifts",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon -r ts-node/register src/index.ts"
   },

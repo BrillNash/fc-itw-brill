@@ -1,20 +1,22 @@
-import { db } from '../config/datastore'
+import { datastore } from '../config/datastore'
 import { v4 as uuidv4 } from 'uuid'
-import { collection, deleteDoc, doc, getDocs, setDoc, updateDoc } from "firebase/firestore" 
 import { WorkerError } from '../errors/workerError'
 
 export const getAllWorkers = async () => {
   try {
-    const querySnapshot = await getDocs(collection(db, "workers"))
-    const workers = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+    const query = datastore.createQuery('Worker')
+    const [workers] = await datastore.runQuery(query)
+
+    const result = workers.map((worker: any) => ({
+      id: worker[datastore.KEY].name || worker[datastore.KEY].id,
+      ...worker,
     }))
-    return workers
+
+    return result
   } catch (e: any) {
     throw new WorkerError({
       error: e,
-      message: "Error fetching workers",
+      message: 'Error fetching workers',
       status: 400,
     })
   }
@@ -24,21 +26,32 @@ export const createWorker = async (name: string) => {
   const randomUUID = uuidv4()
   const createdAt = Date.now()
 
-  const worker = {
-    id: randomUUID,
+  const workerData = {
     name,
     created_at: createdAt,
   }
 
   try {
-    const docRef = doc(db, "workers", randomUUID)
-    await setDoc(docRef, worker)
+    const workerKey = datastore.key(['Worker', randomUUID])
 
-    return worker
+    const entity = {
+      key: workerKey,
+      data: workerData,
+    }
+
+    await datastore.save({ key: workerKey, data: workerData })
+
+    await datastore.save(entity)
+    console.log('Worker created successfully:', entity)
+
+    return {
+      id: randomUUID,
+      ...workerData,
+    }
   } catch (e: any) {
     throw new WorkerError({
       error: e,
-      message: "Error creating worker",
+      message: 'Error creating worker',
       status: 400,
     })
   }
@@ -46,10 +59,15 @@ export const createWorker = async (name: string) => {
 
 export const updateWorkerName = async (workerId: string, newName: string) => {
   try {
-    const docRef = doc(db, "workers", workerId)
-    await updateDoc(docRef, {
-      name: newName,
-    })
+    const workerKey = datastore.key(["Worker", workerId])
+    const [worker] = await datastore.get(workerKey)
+
+    if (!worker) {
+      throw new Error(`Worker with ID ${workerId} not found.`)
+    }
+
+    worker.name = newName
+    await datastore.update({ key: workerKey, data: worker })
   } catch (e: any) {
     throw new WorkerError({
       error: e,
@@ -59,17 +77,27 @@ export const updateWorkerName = async (workerId: string, newName: string) => {
   }
 }
 
+
 export const deleteWorker = async (workerId: string) => {
   try {
-    const shiftsCollection = collection(db, "workers", workerId, "shifts")
-    const shiftsSnapshot = await getDocs(shiftsCollection)
+    const workerKey = datastore.key(["Worker", workerId])
 
-    const deleteShiftPromises = shiftsSnapshot.docs.map((shiftDoc) =>
-      deleteDoc(shiftDoc.ref)
-    )
-    await Promise.all(deleteShiftPromises)
+    const query = datastore
+      .createQuery("Shift")
+      .hasAncestor(workerKey)
 
-    await deleteDoc(doc(db, "workers", workerId))
+    const [shifts] = await datastore.runQuery(query)
+
+    const deleteShifts = shifts.map((shift) => ({
+      method: "delete",
+      key: shift[datastore.KEY],
+    }))
+
+    if (deleteShifts.length > 0) {
+      await datastore.save(deleteShifts)
+    }
+
+    await datastore.delete(workerKey)
   } catch (e: any) {
     throw new WorkerError({
       error: e,
@@ -78,5 +106,3 @@ export const deleteWorker = async (workerId: string) => {
     })
   }
 }
-
-

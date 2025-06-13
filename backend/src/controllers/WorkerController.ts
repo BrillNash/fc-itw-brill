@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { getAllWorkers, createWorker, updateWorkerName, deleteWorker } from '../services/Worker'
-import { workerSchema } from '../schemas/workerSchema';
-import { WorkerError } from '../errors/workerError';
+import { workerSchema } from '../schemas/workerSchema'
+import { WorkerError } from '../errors/workerError'
 
 export const getWorkersHandler = async (_request: Request, response: Response) => {
   const workers = await getAllWorkers()
@@ -9,25 +9,25 @@ export const getWorkersHandler = async (_request: Request, response: Response) =
 }
 
 export const createWorkerHandler = async (request: Request, response: Response) => {
-  const validatedBody = workerSchema.safeParse(request.body);
+  const validatedBody = workerSchema.safeParse(request.body)
 
   if (!validatedBody.success) {
     throw new WorkerError({
       error: validatedBody.error.flatten(),
       message: "Validation failed",
       status: 400,
-    });
+    })
   }
 
-  const { name } = validatedBody.data;
+  const { name } = validatedBody.data
 
-  const worker = await createWorker(name);
+  const worker = await createWorker(name)
 
-  response.status(200).json(worker);
+  response.status(200).json(worker)
 }
 
 export const updateWorkerHandler = async (request: Request, response: Response) => {
-  const validatedBody = workerSchema.safeParse(request.body);
+  const validatedBody = workerSchema.safeParse(request.body)
   const params = request.params
 
   if (!validatedBody.success) {
@@ -35,20 +35,21 @@ export const updateWorkerHandler = async (request: Request, response: Response) 
       error: validatedBody.error.flatten(),
       message: "Validation failed",
       status: 400,
-    });
+    })
   }
 
-  const { name } = validatedBody.data;
+  const { name } = validatedBody.data
+  console.log(params.id, name)
 
-  await updateWorkerName(params.id, name);
+  await updateWorkerName(params.id, name)
 
-  response.status(200).json('Successfully updated worker');
+  response.status(200).json('Successfully updated worker')
 }
 
 export const deleteWorkerHandler = async (request: Request, response: Response) => {
   const params = request.params
 
-  await deleteWorker(params.id);
+  await deleteWorker(params.id)
 
-  response.status(200).json('Successfully deleted!');
+  response.status(200).json('Successfully deleted!')
 }

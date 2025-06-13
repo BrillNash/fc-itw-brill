@@ -1,23 +1,21 @@
-import { getDocs, collection, doc, setDoc, updateDoc, deleteDoc, collectionGroup, getDoc } from 'firebase/firestore'
-import { db } from '../config/datastore'
+import { datastore } from '../config/datastore'
 import { ShiftError } from '../errors/shiftError'
 import { v4 as uuidv4 } from 'uuid'
 
 export const getShiftsByWorkerId = async (workerId: string) => {
   try {
-    const shiftsCollectionRef = collection(db, "workers", workerId, "shifts")
-    const querySnapshot = await getDocs(shiftsCollectionRef)
+    const workerKey = datastore.key(["Worker", workerId])
 
-    if (querySnapshot.empty) {
-      return []
-    }
+    const query = datastore
+      .createQuery("Shift")
+      .hasAncestor(workerKey)
 
-    const shifts = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+    const [shifts] = await datastore.runQuery(query)
+
+    return shifts.map((shift) => ({
+      id: shift[datastore.KEY].name || shift[datastore.KEY].id,
+      ...shift,
     }))
-
-    return shifts
   } catch (e: any) {
     throw new ShiftError({
       error: e,
@@ -29,15 +27,14 @@ export const getShiftsByWorkerId = async (workerId: string) => {
 
 export const getAllShifts = async () => {
   try {
-    // Searches all subcollections named "shifts" regardless of parent
-    const querySnapshot = await getDocs(collectionGroup(db, "shifts"))
+    const query = datastore.createQuery("Shift")
 
-    const shifts = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+    const [shifts] = await datastore.runQuery(query)
+
+    return shifts.map((shift) => ({
+      id: shift[datastore.KEY].name || shift[datastore.KEY].id,
+      ...shift,
     }))
-
-    return shifts
   } catch (e: any) {
     throw new ShiftError({
       error: e,
@@ -47,23 +44,31 @@ export const getAllShifts = async () => {
   }
 }
 
-export const createShift = async (workerId: string, start: string, end: string, _duration: number) => {
+export const createShift = async (
+  workerId: string,
+  start: string,
+  end: string,
+  _duration: number
+) => {
   try {
-    const randomUUID = uuidv4()
-    const shiftDoc = {
-      worker_id: workerId,
-      start: new Date(start),
-      end: new Date(end),
-      created_at: Date.now(),
+    const shiftId = uuidv4()
+    const shiftKey = datastore.key(["Worker", workerId, "Shift", shiftId])
+
+    const shiftEntity = {
+      key: shiftKey,
+      data: {
+        worker_id: workerId,
+        start: new Date(start),
+        end: new Date(end),
+        created_at: new Date(),
+      },
     }
 
-    // Store under: workers/{workerId}/shifts/{shiftId}
-    const docRef = doc(collection(db, "workers", workerId, "shifts"), randomUUID)
-    await setDoc(docRef, shiftDoc)
+    await datastore.save(shiftEntity)
 
     return {
-      id: docRef.id,
-      ...shiftDoc,
+      id: shiftId,
+      ...shiftEntity.data,
     }
   } catch (e: any) {
     throw new ShiftError({
@@ -80,72 +85,73 @@ export const updateShift = async (
   updates: {
     start?: string
     end?: string
-    workerId?: string // Optional new workerId
+    workerId?: string
   }
 ) => {
   try {
-    const oldDocRef = doc(db, "workers", currentWorkerId, "shifts", shiftId);
+    const currentKey = datastore.key(["Worker", currentWorkerId, "Shift", shiftId])
 
-    // If no workerId change, just update in place
+    // If workerId is not changing
     if (!updates.workerId || updates.workerId === currentWorkerId) {
-      const updatePayload: Record<string, any> = {
-        updated_at: Date.now(),
-      };
+      const [existing] = await datastore.get(currentKey)
+      if (!existing) throw new Error("Shift not found")
 
-      if (updates.start) updatePayload.start = new Date(updates.start);
-      if (updates.end) updatePayload.end = new Date(updates.end);
+      const updatePayload = {
+        ...existing,
+        updated_at: new Date(),
+      }
 
-      await updateDoc(oldDocRef, updatePayload);
+      if (updates.start) updatePayload.start = new Date(updates.start)
+      if (updates.end) updatePayload.end = new Date(updates.end)
+
+      await datastore.update({
+        key: currentKey,
+        data: updatePayload,
+      })
 
       return {
         id: shiftId,
         workerId: currentWorkerId,
         ...updatePayload,
-      };
+      }
     }
 
-    // WorkerId has changed — migrate the shift
-    const newWorkerId = updates.workerId;
-    const newDocRef = doc(db, "workers", newWorkerId, "shifts", shiftId);
+    // WorkerId has changed — migrate shift
+    const newWorkerId = updates.workerId
+    const newKey = datastore.key(["Worker", newWorkerId, "Shift", shiftId])
 
-    const oldDocSnap = await getDoc(oldDocRef);
-    if (!oldDocSnap.exists()) {
-      throw new Error("Original shift not found");
-    }
-
-    const oldData = oldDocSnap.data();
+    const [oldData] = await datastore.get(currentKey)
+    if (!oldData) throw new Error("Original shift not found")
 
     const migratedData = {
       ...oldData,
       start: updates.start ? new Date(updates.start) : oldData.start,
       end: updates.end ? new Date(updates.end) : oldData.end,
       worker_id: newWorkerId,
-      updated_at: Date.now(),
-    };
+      updated_at: new Date(),
+    }
 
-    await setDoc(newDocRef, migratedData);
-    await deleteDoc(oldDocRef);
+    // Save new and delete old
+    await datastore.save({ key: newKey, data: migratedData })
+    await datastore.delete(currentKey)
 
     return {
       id: shiftId,
       ...migratedData,
-    };
+    }
   } catch (e: any) {
     throw new ShiftError({
       error: e,
       message: "Failed to update (or migrate) shift",
       status: 400,
-    });
+    })
   }
 }
 
-export const deleteShift = async (
-  shiftId: string,
-  workerId: string
-) => {
+export const deleteShift = async (shiftId: string, workerId: string) => {
   try {
-    const docRef = doc(db, "workers", workerId, "shifts", shiftId)
-    await deleteDoc(docRef)
+    const shiftKey = datastore.key(["Worker", workerId, "Shift", shiftId])
+    await datastore.delete(shiftKey)
 
     return { success: true, id: shiftId }
   } catch (e: any) {

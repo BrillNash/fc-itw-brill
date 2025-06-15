@@ -4,6 +4,7 @@
   "description": "A Shift Management App that allows users to add workers and manage their shifts",
   "main": "dist/index.js",
   "scripts": {
+    "dev": "nodemon -r ts-node/register src/index.ts",
     "start": "nodemon -r ts-node/register src/index.ts"
   },
   "keywords": [],

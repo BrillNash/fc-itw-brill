@@ -161,7 +161,7 @@ const onSubmit = form.handleSubmit(async (values) => {
     await shiftStore.addShift(values.workerId, start.toISOString(), end.toISOString())
     form.resetForm()
   } catch(e) {
-    console.log(e)
+    console.error(e)
     toast.error('Invalid date or time format')
   }
 })

@@ -39,7 +39,6 @@ export const updateWorkerHandler = async (request: Request, response: Response) 
   }
 
   const { name } = validatedBody.data
-  console.log(params.id, name)
 
   await updateWorkerName(params.id, name)
 

@@ -37,9 +37,9 @@ export const useShiftStore = defineStore('shifts', () => {
         return {
           id: shift.id,
           workerId: convertedShift.workerId,
-          start: shift.start.seconds,
-          end: shift.end.seconds,
-          createdAt: shift.createdAt
+          start: getEpochSeconds(shift.start),
+          end: getEpochSeconds(shift.end),
+          createdAt: getEpochSeconds(convertedShift.createdAt)
         }
       })
       shifts.value = formattedShifts

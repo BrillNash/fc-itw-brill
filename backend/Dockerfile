@@ -7,7 +7,6 @@ COPY package*.json pnpm-lock.yaml ./
 RUN npm install -g pnpm && pnpm install
 
 COPY . .
-
 RUN pnpm build
 
 # Stage 2: Run
@@ -17,7 +16,7 @@ WORKDIR /app
 
 COPY --from=build /app/dist ./dist
 COPY package*.json ./
-RUN pnpm install --prod
+RUN npm install --production
 
 EXPOSE 8080
 

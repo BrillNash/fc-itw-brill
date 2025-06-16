@@ -7,10 +7,14 @@ export const getAllWorkers = async () => {
     const query = datastore.createQuery('Worker')
     const [workers] = await datastore.runQuery(query)
 
-    const result = workers.map((worker: any) => ({
-      id: worker[datastore.KEY].name || worker[datastore.KEY].id,
-      ...worker,
-    }))
+    const result = workers.map((worker: any) => {
+      const key = worker[datastore.KEY]
+      return {
+        id: key.name || key.id,
+        name: worker.name,
+        ...worker
+      }
+    })
 
     return result
   } catch (e: any) {

@@ -43,7 +43,7 @@ A full-stack web application for managing and scheduling worker shifts with time
 ### Firebase Hosting (Front-End)
 
 ```bash
-cd shift-frontend
+cd frontend
 npm install
 npm run build
 firebase deploy

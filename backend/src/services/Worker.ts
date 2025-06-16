@@ -16,7 +16,7 @@ export const getAllWorkers = async () => {
   } catch (e: any) {
     throw new WorkerError({
       error: e,
-      message: 'Error fetching workers',
+      message: e.message,
       status: 500,
     })
   }

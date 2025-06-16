@@ -111,10 +111,10 @@ Server will start at: [http://localhost:8080](http://localhost:8080)
 gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/backend
 
 gcloud run deploy fc-itw-brill \
-  --image gcr.io/YOUR_PROJECT_ID/shift-api \
-  --platform managed \
-  --region YOUR_REGION \
-  --allow-unauthenticated
+  --source . \
+  --region=asia-southeast1 \
+  --allow-unauthenticated \
+  --set-env-vars="NODE_ENV=production,GOOGLE_DATABASE_ID=your-database-id"
 ```
 
 > Requires that Google Cloud SDK and billing are configured properly.
